@@ -1,161 +1,202 @@
+
 <template>
-<div>
-    <app-header :title="conten">
-    </app-header>
-    <app-content ref="content" style="bottom: .71rem;">
-        <div v-show="page=='recommended'">
-            <user-item v-for="(item,index) in recommendList">
-                <span class="head-img" slot="head-img">
-                    <img :src="item.portraitURL" @click="goUserDetail(item.userId)">
-                </span>
-                <p class="title" slot="title">{{item.username}}</p>
-                <p class="time" slot="time">{{item.createDate}}</p>
-                <div class="arrow-wrap" @click="tabAct(index)" slot="arrow-wrap">
-                    <span class="iconfont icon-arrow-down"></span>
-                    <ul class="tab-list" v-show="tabShow && selectIndex == index">
-                        <li class="tab-line"></li>
-                        <li class="tab-item">关注</li>
-                        <li class="tab-item">我不感兴趣</li>
-                    </ul>
-                </div>
-                <div class="text" slot="text" @click="goPostsDetail(item.topicId)">
-                    {{item.context}}
-                </div>
-                <li class="img-item" slot="img-item" @click="goPostsDetail(item.topicId)">
-                    <img :src="item.pictureUrl.split(',')[0]">
-                </li>
-                <li class="img-item" slot="img-item" @click="goPostsDetail(item.topicId)">
-                    <img :src="item.pictureUrl.split(',')[1]">
-                </li>
-                <li class="img-item" slot="img-item" @click="goPostsDetail(item.topicId)">
-                    <img :src="item.pictureUrl.split(',')[2]">
-                </li>
-                <span class="btn-text" slot="btn-text1">{{item.collectNumber}}</span>
-                <span class="btn-text" slot="btn-text2">{{item.rewardNumber}}</span>
-                <span class="btn-text" slot="btn-text3">{{item.replyNumber}}</span>
-                <span class="btn-text" slot="btn-text4">{{item.likeNumber}}</span>
-            </user-item>
-        </div>
-        <div v-show="page=='special'">
-            <user-item v-for="(item,index) in attentionList">
-                <span class="head-img" slot="head-img">
-                    <img :src="item.User.portraitURL" @click="goUserDetail(item.User.Id)">
-                </span>
-                <p class="title" slot="title">{{item.User.username}}</p>
-                <p class="time" slot="time">{{item.createDate}}</p>
-                <span class="focus-btn" slot="focus-btn">
-                    已关注
-                </span>
-                <div class="text" slot="text" @click="goPostsDetail(item.Id)">
-                    {{item.context}}
-                </div>
-                <li class="img-item" slot="img-item" @click="goPostsDetail(item.Id)">
-                    <img :src="item.pictureUrl.split(',')[0]">
-                </li>
-                <li class="img-item" slot="img-item" @click="goPostsDetail(item.Id)">
-                    <img :src="item.pictureUrl.split(',')[1]">
-                </li>
-                <li class="img-item" slot="img-item" @click="goPostsDetail(item.Id)">
-                    <img :src="item.pictureUrl.split(',')[2]">
-                </li>
-                <span class="btn-text" slot="btn-text1">{{item.collectNumber}}</span>
-                <span class="btn-text" slot="btn-text2">{{item.rewardNumber}}</span>
-                <span class="btn-text" slot="btn-text3">{{item.replyNumber}}</span>
-                <span class="btn-text" slot="btn-text4">{{item.likeNumber}}</span>
-            </user-item>
-        </div> 
-    </app-content>
-    <router-view></router-view>
-    <app-foot />
-</div>
+  <div class="home-page">
+    <Layout>
+      <Header>
+        <Menu mode="horizontal" theme="light" active-name="1">
+          <div class="layout-logo">长期激励系统</div>
+          <div class="layout-nav">
+              <MenuItem
+                v-for="(item, index) in menuList"
+                :key="index"
+                :name="item.name"
+                :to="item.path"
+                style="color: #000"
+              >
+                {{item.title}}
+              </MenuItem>
+          </div>
+          <div class="userName">
+            <Submenu name="1">
+              <template slot="title">
+                <Icon type="ios-contact-outline" />Eson
+              </template>
+              <MenuItem name="1-1" :style="{width: '50px'}">退出系统</MenuItem>
+            </Submenu>
+            <Icon type="ios-power" />
+          </div>
+        </Menu>
+      </Header>
+      <Content>
+        <Layout>
+          <Sider :style="{background: '#fff', minWidth: '320px', paddingLeft: '50px'}">
+              <Menu class="ivu-layout-menu" :accordion= true active-name="1-2-1" theme="light" width="auto" :open-names="['1']">
+                  <Submenu v-for="(item, index) in siderMenuList" :name="item.name" :key="index">
+                      <template slot="title">
+                          <Icon type="ios-document-outline"></Icon>
+                          {{item.title}}
+                      </template>
+                      <TreeMenu v-bind="$attrs" :data="item.children"></TreeMenu>
+                  </Submenu>
+              </Menu>
+          </Sider>
+          <router-view></router-view>
+        </Layout>
+      </Content>
+    </Layout>
+  </div>
 </template>
 <script>
-import userItem from "./userItem.vue";
-import {getRecommendPage,getAttentionPage} from "../../services/homeService.js";
-export default {
-    data(){
-        return{
-            page:'recommended',
-            t:'red',
-            conten:{
-                left:'推荐',
-                right:'特别关注',
-                show:true,
-                rightshow:true,
-                arrowright:false,
-                showleft:true,
-                searchDetails:false
-            },
-            tabShow: false,
-            selectIndex: 0,
-            recommendList: [],
-            attentionList: [],
-            recommendPage: 1,
-            attentionPage: 1
-        }
+
+  export default {
+    data () {
+      return {
+        menuList: [],
+        siderMenuList: [],
+      }
     },
+    created () {
+      this.menuList = this.getMenuList();
+      this.siderMenuList = this.getSiderMenuList();
+    },
+    computed: {},
+    watch: {},
     methods: {
-        tabAct (index) {
-            this.tabShow = !this.tabShow;
-            this.selectIndex = index;
-        },
-        getRecommend () {
-            //初始化推荐页面数据
-            getRecommendPage(this.recommendPage).then(data=>{
-                this.recommendList = data;
-                //数据渲染完后更新滚动视图
-                this.$nextTick(()=>{
-                    this.$refs.content.refreshDOM();
-                })
-            })
-        },
-        getAttention () {
-            //初始化特别关注数据
-            getAttentionPage(2).then(data=>{
-                this.attentionList = data;
-                this.$nextTick(()=>{
-                    this.$refs.content.refreshDOM();
-                })
-            })
-        },
-        //获得页面初始化数据
-        getInitData(){
-            //判断要展示的界面有没有初始数据，没有就请求
-            if(this.page == 'recommended' && this.recommendList.length == 0){
-                this.getRecommend();
-            }
-            //判断要展示的界面有没有初始数据，没有就请求
-            if(this.page == 'special' && this.attentionList.length == 0){
-                this.getAttention();
-            }
-        },
-        goUserDetail (id) {
-            this.$router.push({
-                name: "HomeUserDetail",
-                params: {
-                    userId: id
-                }
-            })
-        },//点击进入帖子详情页
-        goPostsDetail (id) {
-            this.$router.push({
-                name: "homePostDetail",
-                params: {
-                    id
-                }
-            })
-        }
-    },
-    components: {
-        'user-item': userItem
-    },
-    mounted(){
-        this.getInitData();
-        //头部点击切换时,初始化相应数据
-        this.$pubsub.$on('showPage',(data)=>{
-            this.page = data;
-            this.getInitData();
-        })
+      getMenuList () {
+        const menuList = [
+          {
+            name: 1,
+            title: '长奖',
+            path: '/',
+          },
+          {
+            name: 2,
+            title: '工分',
+            path: '/',
+          },
+          {
+            name: 3,
+            title: '持股',
+            path: '/',
+          },
+          {
+            name: 4,
+            title: '增值权',
+            path: '/',
+          },
+          {
+            name: 5,
+            title: '期权',
+            path: '/',
+          },
+        ];
+        return menuList;
+      },
+      getSiderMenuList () {
+        const siderMenuList = [
+          {
+            title: '总量管理',
+            name: '1',
+            path: '/',
+            subMenu: true,
+            routerName: 'manageTotal',
+            children: [
+              {
+                title: '期权值',
+                name: '1-1',
+                path: '/',
+                subMenu: true,
+                routerName: '',
+                children: [
+                  {
+                    title: '新增期权值',
+                    name: '1-1-1',
+                    path: 'home',
+                    subMenu: true,
+                    routerName: '',
+                    children: [
+                      {
+                        title: '编辑审批通过的期权值',
+                        name: '1-1-1-1',
+                        path: '/home/home-detail',
+                        routerName: '',
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                title: '期权品种（集团管理员）',
+                name: '1-2',
+                path: '/',
+                subMenu: true,
+                routerName: '',
+              }
+            ]
+          },
+          {
+            title: '期权授予',
+            name: '2',
+            path: '/',
+            subMenu: true,
+            routerName: 'optionGrants',
+          }
+        ];
+        return siderMenuList;
+      }
     }
-}
+  }
 </script>
+<style lang="less">
+.home-page {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  border-radius: 4px;
+  overflow: hidden;
+  .layout-logo {
+  width: 100px;
+  height: 30px;
+  border-radius: 3px;
+  float: left;
+  position: relative;
+  top: 15px;
+  left: 20px;
+  }
+  .layout-nav{
+    float: left;
+    margin-left: 140px;
+  }
+  .userName {
+    float: right;
+  }
+  .layout-footer-center{
+      text-align: center;
+  }
+  .ivu-layout-header, .ivu-menu-dark {
+      background: #fff;
+  }
+  .layout-logo {
+      line-height: 30px;
+  }
+  .ivu-layout {
+    height: 100%;
+    background: #fff;
+    padding: 0!important;
+    & > .ivu-layout-content {
+      background: transparent!important;
+      height: 100%;
+      // padding: 20px!important;
+      .ivu-layout-menu {
+        height: 100%;
+        overflow: auto;
+      }
+    }
+  }
+  .ivu-tabs-bar {
+    padding-bottom: 20px;
+    border-bottom: 0;
+  }
+}
+
+</style>

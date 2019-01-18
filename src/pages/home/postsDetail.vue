@@ -1,5 +1,6 @@
 <template>
 	<app-content style="top: 0;bottom: 0;z-index: 3" ref="content">
+		
 		<div class="top-title">
 			<span class="arrow-left" @click="goBack">
 				<img src="img/xhdpi/安卓 copy 41.png">
