@@ -89,4 +89,7 @@ export default {
         width: 0.22rem;
         height: 0.19rem;
     }
+    /* .el-tooltip_popper.is-light[x-placement^=bottom] .popper__arrow {
+        border-bottom-color: #5f646e;
+    } */
 </style>
